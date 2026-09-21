@@ -49,6 +49,33 @@ function verifyJWT(req, res, next){
     }
 }
 
+//get list of all users
+async function getAllUsers(){
+    try{
+        const user = await User.find()
+        return user
+
+    }catch(error){
+        throw error
+    }
+}
+
+app.get("/user", async(req, res) => {
+    try{
+        const users = await getAllUsers()
+        if(users.length !== 0){
+            return res.status(200).json(users)
+        } else{
+            return res.status(404).json({message: "No user found."})
+        }
+
+    }catch(error){
+        return res.status(500).json({message: "Server error while fetching all the users"})
+    }
+})
+
+//delete user - make sure when we deleting the user then we have created id on the basis of role as well so we have to delete that as well
+
 //
 //recruiter part
 //
@@ -75,7 +102,7 @@ try{
 
     const newJob = await postJob({...req.body, postedBy: recruiter._id})
     if(newJob){
-        return res.status(201).json(newJob)
+        return res.status(201).json({message: "New job created", newJob})
     } else {
         return res.status(400).json({message: "No job details provided"})
     }
@@ -85,17 +112,78 @@ try{
 }
 })
 
-
-
 //edit job
 
 
 //get all jobs that he created
+async function getRecruiterJobs(recuriterId){
+    try{
+        const jobs = await PostJob.find({postedBy: recuriterId})
+        return jobs
+
+    }catch(error){
+        throw error
+    }
+}
+
+app.get("/recruiter/job", verifyJWT, async(req, res) => {
+    try{
+
+        if(req.user.userRole !== "Recruiter"){
+            return res.status(403).json({message: "Only recruiter can view their jobs"})
+        }
+
+        const recruiter = await Recruiter.findOne({user: req.user.id})
+        if(!recruiter){
+            return res.status(400).json({message: "Recruiter profile not found."})
+        }
+
+        const getJob = await getRecruiterJobs(recruiter._id)
+        if(getJob.length !== 0){
+            return res.status(200).json(getJob)
+        } else {
+            return res.status(404).json({message: "No job found."})
+        }
+
+    }catch(error){
+        return res.status(500).json({message: "Server issue while getting the jobs", error: error.message})
+    }
+})
+
 
 //
 //applicant part
 //
 //get all the jobs of the entire app
+async function getAllJob(){
+    try{
+        const job = await PostJob.find().populate({
+            path: "postedBy",
+            populate: {
+                path: "user",
+                select: "userEmail"
+            }
+        })
+        return job
+
+    }catch(error){
+        throw error
+    }
+}
+
+app.get("/job", async(req, res) => {
+    try{
+        const jobs = await getAllJob()
+        if(jobs.length !== 0){
+            return res.status(200).json(jobs)
+        } else {
+            return res.status(404).json({message: "No job found."})
+        }
+        
+    }catch(error){
+        return res.status(500).json({message: "Server error while fetching jobs", error: error.message})
+    }
+})
 
 
 //
