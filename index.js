@@ -19,7 +19,7 @@ app.use(express.json())
 const JWT_SECRET = process.env.JWT_SECRET
 
 
-//checking api
+//checking api 
 app.get("/", (req, res) => {
     res.send("naurkiHub API is working")
 })
@@ -151,7 +151,7 @@ app.get("/recruiter/job", verifyJWT, async(req, res) => {
 })
 
 
-//
+
 //applicant part
 //
 //get all the jobs of the entire app
