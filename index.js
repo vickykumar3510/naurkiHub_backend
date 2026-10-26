@@ -10,13 +10,28 @@ const Applicant = require("./models/applicant.model")
 const Recruiter = require("./models/recruiter.model")
 const PostJob = require("./models/postJob.model")
 
+//The important order:-
+//•middleware before routes
+//•routes before listen
+//•DB connect before you handle real API calls that use models (not strictly before app.use)
+//•Request path (after the server is up)
+
 const app = express()
 connectDB()
 
-app.use(cors())
-app.use(express.json())
+//Code cors() first then express.json()
+
+app.use(cors()) //Cors – verifies the frontend
+app.use(express.json()) //Express.json – convert the incoming data into reuseable json
 
 const JWT_SECRET = process.env.JWT_SECRET
+
+//Important - 
+//Flow of fronted to backend in case of form submit
+// backend: submit → HTTP → cors → express.json → route → DB → response.
+// Here is the exact, step-by-step journey your data takes from the moment the user clicks "Submit" to the moment the screen updates.
+// This is the heartbeat of your full-stack application.
+
 
 
 //checking api 
